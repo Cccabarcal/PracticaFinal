@@ -244,18 +244,6 @@ aws logs tail /ecs/eafit-web-es --follow
 
 ---
 
-## 💰 Costos
-
-| Componente | Costo | Con AWS Educate |
-|-----------|-------|-----------------|
-| ALB | $16.20 | Gratis |
-| ECS | $15-25 | Gratis |
-| RDS | $9.50 | Gratis |
-| DuckDNS | $0 | Gratis |
-| **Total** | **~$41** | **$0 (crédito $100/mes)** |
-
----
-
 ## 🐳 Comandos Docker Útiles
 
 ```bash
