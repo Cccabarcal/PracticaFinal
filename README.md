@@ -2,293 +2,257 @@
 
 ## 📋 Descripción General
 
-Sistema web completo para registrar estudiantes interesados en programas académicos de la Universidad EAFIT. Incluye:
+Sistema web completo para registrar estudiantes interesados en programas académicos de la Universidad EAFIT, con:
 
 - ✅ Aplicación web bilingüe (Español e Inglés)
 - ✅ Balanceador de carga con NGINX (Round Robin)
-- ✅ Base de datos MySQL
-- ✅ Panel de estadísticas con gráficas
+- ✅ Base de datos MySQL 8.0 con UTF-8
+- ✅ Dashboard de estadísticas con gráficas
+- ✅ Envío de reportes por email
 - ✅ SSL/TLS seguro
-- ✅ Docker para toda la infraestructura
+- ✅ Despliegue en Docker y AWS
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## 📚 Documentación Esencial
+
+### 1. **CONFIGURACION_Y_DESPLIEGUE.md** ⭐ COMIENZA AQUÍ
+   - Requisitos del sistema
+   - Arquitectura completa
+   - Guía paso a paso local y AWS
+   - Configuración de DuckDNS
+   - Testing y troubleshooting
+
+### 2. **AWS_README.md**
+   - Resumen de despliegue en AWS
+   - Quick start (5 minutos)
+   - Costos y presupuesto
+   - Scripts y herramientas
+
+---
+
+## 🏗️ Estructura del Proyecto
 
 ```
-PracticaFinal/
-├── app-web/              # Aplicación principal Flask
-│   ├── app.py
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── templates/
-│       ├── index_es.html
-│       └── index_en.html
-├── app-estadisticas/     # Aplicación de reportes
-│   ├── app.py
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── templates/
-│       └── dashboard.html
-├── nginx/                # Configuración del balanceador
+├── app-web/                   # Formularios de registro
+│   ├── templates/
+│   │   ├── index_es.html     # Formulario en español
+│   │   └── index_en.html     # Formulario en inglés
+│   └── app.py
+├── app-estadisticas/          # Dashboard de estadísticas
+│   ├── templates/
+│   │   └── dashboard.html
+│   └── app.py
+├── nginx/                     # Proxy inverso y balanceador
 │   └── nginx.conf
-├── database/             # Scripts de inicialización
+├── database/                  # Inicialización DB
 │   └── init.sql
-├── certs/                # Certificados SSL
-│   ├── server.crt
-│   └── server.key
-├── docker-compose.yml
-├── .env.example
-└── README.md
+├── CONFIGURACION_Y_DESPLIEGUE.md  ⭐ LEER PRIMERO
+├── AWS_README.md              # AWS + DuckDNS
+├── aws-deploy.ps1             # Script de automatización
+├── ecs-task-definition.json   # Configuración ECS
+├── docker-compose.yml         # Orquestación local
+└── .env.example               # Variables de entorno
 ```
 
 ---
 
-## 🚀 Instalación y Despliegue
-
-### Requisitos Previos
-
-- Docker (versión 20.10+)
-- Docker Compose (versión 1.29+)
-- Git
-
-### Pasos de Instalación
-
-#### 1. Clonar el repositorio
+## 🚀 Quick Start Local (3 minutos)
 
 ```bash
-git clone <tu-repositorio>
+# 1. Clonar/descargar proyecto
 cd PracticaFinal
-```
 
-#### 2. Configurar variables de entorno
-
-```bash
+# 2. Configurar variables
 cp .env.example .env
+
+# 3. Iniciar servicios
+docker-compose up -d
+
+# 4. Acceder a la aplicación
+# Español: http://localhost/es
+# Inglés: http://localhost/en
+# Estadísticas: http://localhost/stats?password=admin123
 ```
 
-Edita el archivo `.env` con tus valores:
+---
+
+## ☁️ Despliegue en AWS (30 minutos)
+
+```powershell
+# 1. Instalar AWS CLI
+choco install awscli
+
+# 2. Configurar credenciales
+aws configure
+
+# 3. Ejecutar despliegue
+.\aws-deploy.ps1 -Action setup-all
+
+# 4. Configurar DuckDNS
+# Ir a https://www.duckdns.org
+# Crear dominio y apuntar al ALB
+
+# 5. Acceder
+# http://proyectoiota.duckdns.org/stats
+# https://proyectoiota.duckdns.org/stats (con SSL)
+```
+
+**Ver documentación completa en CONFIGURACION_Y_DESPLIEGUE.md**
+
+---
+
+## 💻 Componentes Principales
+
+### **Servidor Web (Flask)**
+- Puertos: 5000 (interno)
+- Versiones: Español e Inglés
+- Framework: Flask 3.0.0
+- Servidor: Gunicorn 4 workers
+
+### **Estadísticas (Flask)**
+- Puerto: 5001 (interno)
+- Gráficas: Matplotlib 3.8.2
+- Email: SMTP Gmail
+- Reportes: HTML formateado
+
+### **Proxy Inverso (NGINX)**
+- Puertos: 80 (HTTP), 443 (HTTPS)
+- Balanceo: Round Robin
+- Certificado: SSL/TLS (ACM en AWS)
+- Headers de seguridad
+
+### **Base de Datos (MySQL)**
+- Versión: 8.0
+- Charset: utf8mb4
+- Almacenamiento: Volumen persistente
+- Tabla: registros (id, nombre, comuna, carrera, fecha)
+
+---
+
+## ✨ Características
+
+### 📝 Formulario de Registro
+- Nombre completo (validado)
+- Selección de comuna (10 opciones)
+- Selección de carrera (4 opciones)
+- Soporte multiidioma (ES/EN)
+- Mensajes de confirmación
+
+### 📊 Dashboard de Estadísticas
+- Resumen general (total registros)
+- Gráficas por comuna
+- Gráficas por carrera
+- Análisis cruzado (comuna × carrera)
+- Tabla de datos completa
+
+### 📧 Reportes por Email
+- Autenticación con contraseña
+- Email destinatario configurable
+- Contenido HTML formateado
+- Gráficas incluidas en el correo
+
+### 🎨 Diseño
+- Tema moderno negro/morado
+- Responsive (móvil, tablet, desktop)
+- Gradientes y efectos visuales
+- Iconos y animaciones
+
+---
+
+## 🔧 Configuración
+
+### Variables de Entorno (.env)
 
 ```env
-DB_PASSWORD=tu_contraseña_segura
-ADMIN_PASSWORD=tu_contraseña_admin
-SMTP_USER=tu_email@gmail.com
-SMTP_PASSWORD=tu_contraseña_app
-```
+# Base de datos
+DB_HOST=db
+DB_USER=root
+DB_PASSWORD=eafit_2025_secure
+DB_NAME=usuarios
 
-#### 3. Generar certificados SSL
+# Administración
+ADMIN_PASSWORD=admin123
 
-```bash
-# En Linux/Mac
-./generate_certs.sh
-
-# En Windows PowerShell
-.\generate_certs.ps1
-
-# O manualmente con OpenSSL:
-openssl req -x509 -newkey rsa:4096 -nodes -out certs/server.crt -keyout certs/server.key -days 365
-```
-
-#### 4. Iniciar los servicios
-
-```bash
-docker-compose up -d
-```
-
-#### 5. Verificar el estado
-
-```bash
-docker-compose ps
-docker-compose logs -f
+# Email (SMTP Gmail)
+SMTP_USER=tu-email@gmail.com
+SMTP_PASSWORD=tu-app-password
 ```
 
 ---
 
-## 📍 Acceder a los Servicios
+## 🧪 Testing
 
-- **Aplicación Web (Español)**: https://localhost/es
-- **Aplicación Web (Inglés)**: https://localhost/en
-- **Panel de Estadísticas**: https://localhost/stats
-- **API de Estadísticas**: https://localhost/api/statistics
+### Local
+```bash
+# Probar formulario de registro
+curl -X POST http://localhost/register \
+  -d "nombre=Test&comuna=Comuna 1&carrera=Ingeniería"
 
-> **Nota**: Los navegadores mostrarán una advertencia de certificado no confiable. Esto es normal en desarrollo. Haz clic en "Avanzado" y procede.
+# Ver estadísticas
+curl http://localhost/stats?password=admin123
+
+# Enviar email
+curl -X POST "http://localhost/api/send-report?password=admin123&email=test@example.com"
+```
+
+### AWS
+```powershell
+# Verificar recursos
+aws ec2 describe-instances --region us-east-1
+aws rds describe-db-instances --region us-east-1
+aws ecs list-clusters --region us-east-1
+
+# Ver logs
+aws logs tail /ecs/eafit-web-es --follow
+```
+
+---
+
+## 📦 Dependencias
+
+### Python
+- Flask 3.0.0
+- Matplotlib 3.8.2
+- Gunicorn 21.2.0
+- PyMySQL 1.1.0
+- python-dotenv 1.0.0
+
+### Docker
+- nginx:1.25-alpine
+- python:3.11-slim
+- mysql:8.0
+
+### AWS
+- ECR (Container Registry)
+- ECS Fargate (Orquestación)
+- RDS MySQL (Base de datos)
+- ALB (Load Balancer)
+- ACM (Certificados SSL)
 
 ---
 
 ## 🔐 Seguridad
 
-### Contraseñas Predeterminadas
-
-| Servicio | Usuario | Contraseña |
-|----------|---------|-----------|
-| MySQL | root | `eafit_2025_secure` |
-| Estadísticas | admin | `admin123` |
-
-**⚠️ IMPORTANTE**: Cambia estas contraseñas en producción.
-
----
-
-## 📊 Base de Datos
-
-### Tabla de Registros
-
-```sql
-CREATE TABLE registros (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    comuna VARCHAR(100) NOT NULL,
-    carrera VARCHAR(100) NOT NULL,
-    fecha DATETIME NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-```
-
-### Conectarse a la Base de Datos
-
-```bash
-docker-compose exec db mysql -u root -p usuarios
-```
+✓ Certificados SSL/TLS (ACM + DuckDNS)  
+✓ Contraseña para acceso a estadísticas  
+✓ UTF-8 completo (sin problemas de encoding)  
+✓ Headers de seguridad (HSTS, X-Frame-Options, etc.)  
+✓ CORS configurado  
+✓ Rate limiting en producción  
+✓ Backups automáticos en RDS (7 días)
 
 ---
 
-## 🌍 Configuración del Dominio
+## 💰 Costos
 
-### Registrar un dominio gratuito
-
-1. Ve a https://www.freenom.com/
-2. Busca un dominio disponible (.tk, .ml, .ga, .cf)
-3. Registra el dominio por 3 meses (gratis)
-
-### Configurar los registros DNS
-
-En tu proveedor DNS, crea:
-
-| Tipo | Nombre | Valor |
-|------|--------|-------|
-| A | @ | Tu IP pública de AWS |
-| A | www | Tu IP pública de AWS |
-
-Ejemplo con la IP `54.123.45.67`:
-
-```
-A   @     54.123.45.67
-A   www   54.123.45.67
-```
-
-### Certificado SSL para dominio real
-
-Usa Let's Encrypt (gratuito):
-
-```bash
-# Instalar Certbot
-sudo apt-get install certbot python3-certbot-nginx
-
-# Obtener certificado
-sudo certbot certonly --standalone -d tudominio.tk
-
-# Los certificados estarán en:
-# /etc/letsencrypt/live/tudominio.tk/
-```
-
----
-
-## 📧 Configurar Envío de Correos
-
-### Usando Gmail
-
-1. Habilita "Contraseñas de aplicación" en tu cuenta de Google
-2. En el archivo `.env`:
-   ```env
-   SMTP_USER=tu_email@gmail.com
-   SMTP_PASSWORD=tu_contraseña_app
-   ```
-
-3. Para enviar el reporte:
-   - Ve a https://localhost/stats
-   - Haz clic en "Enviar Reporte por Correo"
-   - Ingresa la contraseña: `admin123`
-
----
-
-## 🐛 Solución de Problemas
-
-### Los contenedores no inician
-
-```bash
-# Ver logs
-docker-compose logs
-
-# Reiniciar servicios
-docker-compose restart
-
-# Reconstruir imágenes
-docker-compose up -d --build
-```
-
-### Error de conexión a la base de datos
-
-```bash
-# Verificar que la BD esté lista
-docker-compose logs db
-
-# Esperar unos segundos y reintentar
-```
-
-### Certificado SSL no confiable
-
-Este es el comportamiento esperado en desarrollo. Para producción:
-1. Usa Let's Encrypt en AWS
-2. Configura un dominio real
-3. Actualiza el certificado en NGINX
-
----
-
-## 📱 Formulario de Registro
-
-El formulario permite:
-
-- ✅ Ingresar nombre completo
-- ✅ Seleccionar zona de comuna (1-10)
-- ✅ Seleccionar carrera:
-  - Medicina
-  - Ingeniería
-  - Abogacía
-  - Licenciatura
-- ✅ Fecha de registro automática
-- ✅ Validación cliente y servidor
-
----
-
-## 📈 Panel de Estadísticas
-
-Ofrece:
-
-- 📊 Gráficas de registros por comuna
-- 📊 Distribución por carrera
-- 📋 Tablas detalladas
-- 📧 Envío de reportes por correo
-- 📥 Descarga en CSV
-
-**Contraseña de acceso**: `admin123`
-
----
-
-## 🔄 Round Robin en NGINX
-
-El balanceador distribuye las solicitudes entre los dos servidores web:
-
-```nginx
-upstream app_es {
-    server web-es:5000;
-}
-
-upstream app_en {
-    server web-en:5000;
-}
-
-# Las solicitudes se distribuyen automáticamente
-```
+| Componente | Costo | Con AWS Educate |
+|-----------|-------|-----------------|
+| ALB | $16.20 | Gratis |
+| ECS | $15-25 | Gratis |
+| RDS | $9.50 | Gratis |
+| DuckDNS | $0 | Gratis |
+| **Total** | **~$41** | **$0 (crédito $100/mes)** |
 
 ---
 
@@ -310,68 +274,49 @@ docker-compose exec db mysql -u root -p usuarios
 # Detener servicios
 docker-compose down
 
-# Eliminar volúmenes (cuidado: borra datos)
-docker-compose down -v
-
 # Reconstruir imágenes
 docker-compose build --no-cache
 ```
 
 ---
 
-## 📄 Archivos Importantes
+## 🆘 Soporte
 
-| Archivo | Propósito |
-|---------|-----------|
-| `docker-compose.yml` | Orquestación de contenedores |
-| `app-web/app.py` | Lógica principal de la aplicación |
-| `nginx/nginx.conf` | Configuración del balanceador |
-| `database/init.sql` | Inicialización de la BD |
-| `.env` | Variables de entorno (no subir a Git) |
+### Problemas Comunes
 
----
+**"No es seguro el sitio"**
+- Configurar SSL con ACM + DuckDNS
+- Usar HTTPS en lugar de HTTP
 
-## 🎯 Próximos Pasos
+**"Error de encoding (AbogacÃa)"**
+- Base de datos con utf8mb4
+- Headers Content-Type: utf-8
+- Ver CONFIGURACION_Y_DESPLIEGUE.md
 
-1. **Desplegar en AWS**:
-   - Usa EC2 para la instancia
-   - Configura Security Groups
-   - Asigna IP elástica
+**"No conecta a RDS"**
+- Verificar endpoint en .env
+- Revisar Security Group
+- Verificar contraseña
 
-2. **Registrar dominio**:
-   - Freenom o GoDaddy
-   - Apunta al IP público de AWS
-
-3. **SSL con Let's Encrypt**:
-   - Usa Certbot en la instancia
-   - Actualiza NGINX con los certificados
-
-4. **Documentación**:
-   - Sube el PDF a GitHub
-   - Incluye capturas de pantalla
-   - Documenta el proceso de despliegue
+**"Certificado inválido"**
+- Esperar validación ACM (10-15 min)
+- Validar en DuckDNS
+- Limpiar caché del navegador
 
 ---
 
-## 📞 Contacto
+## 🔗 Enlaces Útiles
 
-Para preguntas o problemas, contacta al equipo de desarrollo.
-
----
-
-## ✅ Checklist de Entrega
-
-- [ ] Aplicación web funcionando
-- [ ] Base de datos con datos
-- [ ] Balanceador de carga activo
-- [ ] Panel de estadísticas
-- [ ] Certificado SSL
-- [ ] Dominio registrado
-- [ ] Documentación completa
-- [ ] GitHub con código
-- [ ] PDF de documentación
-- [ ] Sustentación preparada
+- **AWS Educate**: https://aws.amazon.com/education/awseducate/
+- **DuckDNS**: https://www.duckdns.org/
+- **Docker**: https://www.docker.com/
+- **Flask**: https://flask.palletsprojects.com/
+- **NGINX**: https://nginx.org/
 
 ---
 
-**Última actualización**: Mayo 2025
+## 📝 Autores
+
+**Cristian Cabarcas** **David Ruiz** **David Quintero**- EAFIT 2025  
+Práctica Final - Internet: Arquitectura y Protocolos
+

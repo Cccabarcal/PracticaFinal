@@ -495,4 +495,4 @@ alias dcr='docker-compose restart'
 
 ---
 
-¡Con esta guía deberías cubrir la mayoría de casos de uso! 📚
+

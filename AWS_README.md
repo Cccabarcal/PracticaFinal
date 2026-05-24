@@ -1,223 +1,145 @@
-# Configuración para AWS
+# Despliegue en AWS con DuckDNS
 
-Este archivo contiene la configuración necesaria para desplegar la aplicación en AWS.
+## Descripción General
 
-## Archivos incluidos en este directorio
-
-### 1. `AWS_DEPLOYMENT_GUIDE.md` 
-**Guía completa paso a paso del despliegue en AWS**
-- Configuración inicial
-- Creación de ECR (Elastic Container Registry)
-- Subida de imágenes Docker
-- Configuración de RDS MySQL
-- Creación de ECS Cluster
-- Setup de Application Load Balancer
-- Configuración de dominio en Route 53
-- SSL/TLS con AWS Certificate Manager
-
-### 2. `aws-deploy.ps1`
-**Script PowerShell de automatización**
-```powershell
-# Ejecutar setup completo
-.\aws-deploy.ps1 -Action setup-all
-
-# Ver estado de recursos
-.\aws-deploy.ps1 -Action status
-
-# Acciones individuales
-.\aws-deploy.ps1 -Action create-ecr
-.\aws-deploy.ps1 -Action push-images
-.\aws-deploy.ps1 -Action create-rds
-.\aws-deploy.ps1 -Action create-ecs
-.\aws-deploy.ps1 -Action create-alb
-```
-
-### 3. `.env.aws.example`
-**Archivo de variables de entorno para AWS**
-Copiar a `.env.aws` y completar con tus valores
+Este proyecto está configurado para desplegarse en **AWS** utilizando:
+- **ECR** para imágenes Docker
+- **ECS Fargate** para contenedores
+- **RDS MySQL** para base de datos
+- **Application Load Balancer** para balanceo de carga
+- **DuckDNS** para dominio dinámico (GRATIS)
+- **ACM** para certificados SSL/TLS
 
 ---
 
-## Pasos Rápidos
+## Documentación
 
-### Opción A: Setup Automatizado (Recomendado)
+### 📋 Documentos Principales
+
+1. **`CONFIGURACION_Y_DESPLIEGUE.md`** - LEER PRIMERO
+   - Requisitos del sistema
+   - Arquitectura del servicio
+   - Componentes principales
+   - Guía completa de despliegue
+   - Configuración DuckDNS
+   - Testing y troubleshooting
+
+2. **`aws-deploy.ps1`** - Script de automatización
+   - Setup automatizado de todos los recursos
+   - Comandos individuales por componente
+   - Verificación de estado
+
+3. **`.env.aws.example`** - Variables de configuración
+   - Base de datos
+   - SMTP
+   - AWS
+
+4. **`ecs-task-definition.json`** - Definición de tareas ECS
+   - Configuración de contenedores
+   - Variables de entorno
+   - Health checks
+
+5. **`init-rds.sh`** - Script inicialización de BD
+   - Crear base de datos
+   - Crear tabla de registros
+   - Insertar datos de prueba
+
+---
+
+## Quick Start (5 minutos)
+
+### 1. Configurar AWS CLI
 
 ```powershell
-# 1. Instalar AWS CLI
 choco install awscli
-
-# 2. Configurar credenciales
 aws configure
-# Ingresar: Access Key, Secret Key, Region (us-east-1), Output format (json)
-
-# 3. Verificar configuración
 aws sts get-caller-identity
+```
 
-# 4. Ejecutar script de deployment
+### 2. Desplegar (Automatizado)
+
+```powershell
 cd "d:\Users\Cristian\Documents\Visual Projects\PracticaFinal"
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 .\aws-deploy.ps1 -Action setup-all
 ```
 
-### Opción B: Setup Manual
+### 3. Configurar DuckDNS
 
-Seguir paso a paso la guía en `AWS_DEPLOYMENT_GUIDE.md`
+1. Ir a https://www.duckdns.org
+2. Crear dominio (ej: `miapp`)
+3. Obtener IP del ALB
+4. Apuntar dominio al ALB
+5. Esperar propagación DNS (5-10 min)
 
----
+### 4. Acceder a la Aplicación
 
-## Costos Estimados (AWS Educate)
-
-| Servicio | Costo/Mes | Acceso |
-|----------|-----------|--------|
-| ECR | $0.10 por GB almacenado | Gratis con Educate |
-| ECS Fargate | $13-20 | Gratis con Educate |
-| RDS MySQL | $9.50 | Gratis con Educate |
-| ALB | $16.20 | Gratis con Educate |
-| Route 53 | $0.50 | Gratis con Educate |
-| **Total** | **~$40** | **Gratis con Educate** |
-
-Con **AWS Educate** recibes **$100 USD/mes** de crédito, lo que cubre completamente estos costos.
+```
+http://miapp.duckdns.org/es
+https://miapp.duckdns.org/es (con SSL)
+https://miapp.duckdns.org/stats?password=admin123
+```
 
 ---
 
-## Verificación Post-Despliegue
+## Costos
+
+| Componente | Costo | Con AWS Educate |
+|-----------|-------|-----------------|
+| ALB | $16.20/mes | Gratis |
+| ECS | $15-25/mes | Gratis |
+| RDS | $9.50/mes | Gratis |
+| DuckDNS | $0 | Gratis |
+| **Total** | **~$41** | **$0 (crédito $100)** |
+
+---
+
+## Archivos de Configuración
+
+### `.env` (Local)
+```env
+DB_HOST=db
+DB_USER=root
+DB_PASSWORD=eafit_2025_secure
+DB_NAME=usuarios
+SMTP_USER=tu-email@gmail.com
+SMTP_PASSWORD=tu-app-password
+```
+
+### `.env.aws` (Producción)
+```env
+DB_HOST=[RDS_ENDPOINT]
+DB_USER=admin
+DB_PASSWORD=[RDS_PASSWORD]
+SMTP_USER=[TU_GMAIL]
+SMTP_PASSWORD=[APP_PASSWORD]
+```
+
+---
+
+## Verificación
 
 ```powershell
-# 1. Verificar ECR
+# Verificar recursos AWS
 aws ecr describe-repositories --region us-east-1
-
-# 2. Verificar RDS
 aws rds describe-db-instances --db-instance-identifier eafit-mysql-db --region us-east-1
-
-# 3. Verificar ECS
 aws ecs list-clusters --region us-east-1
-
-# 4. Verificar ALB
 aws elbv2 describe-load-balancers --names eafit-alb --region us-east-1
 
-# 5. Obtener DNS del ALB
-aws elbv2 describe-load-balancers --names eafit-alb --region us-east-1 --query 'LoadBalancers[0].DNSName' --output text
-
-# 6. Probar aplicación
-# Abrir en navegador: http://[ALB_DNS]/es
+# Obtener info necesaria
+$ALB_DNS = aws elbv2 describe-load-balancers --names eafit-alb --region us-east-1 --query 'LoadBalancers[0].DNSName' --output text
+Write-Host "ALB DNS: $ALB_DNS"
 ```
 
 ---
 
-## Configuración de Variables de Entorno en ECS
-
-En el archivo `ecs-task-definition.json` se configuran:
-
-```json
-{
-  "name": "DB_HOST",
-  "value": "[RDS_ENDPOINT_AQUI]"
-},
-{
-  "name": "DB_USER",
-  "value": "admin"
-},
-{
-  "name": "DB_PASSWORD",
-  "value": "[CONTRASEÑA_RDS_AQUI]"
-},
-{
-  "name": "DB_NAME",
-  "value": "usuarios"
-},
-{
-  "name": "ADMIN_PASSWORD",
-  "value": "admin123"
-},
-{
-  "name": "SMTP_SERVER",
-  "value": "smtp.gmail.com"
-},
-{
-  "name": "SMTP_PORT",
-  "value": "587"
-},
-{
-  "name": "SMTP_USER",
-  "value": "[TU_EMAIL_GMAIL]"
-},
-{
-  "name": "SMTP_PASSWORD",
-  "value": "[TU_APP_PASSWORD_GMAIL]"
-}
-```
-
----
-
-## Solución de Problemas
-
-### Error: "Access Denied" en ECR
-```powershell
-# Verificar credenciales
-aws sts get-caller-identity
-
-# Renovar credenciales si es necesario
-aws configure
-```
-
-### RDS tarda mucho en crearse
-- Normal: puede tomar 5-10 minutos
-- Verificar estado: `aws rds describe-db-instances --db-instance-identifier eafit-mysql-db --query 'DBInstances[0].DBInstanceStatus'`
-
-### ALB no responde
-```powershell
-# Verificar que servicios ECS estén ejecutándose
-aws ecs describe-services --cluster eafit-cluster --services eafit-service --region us-east-1
-
-# Ver logs
-aws logs get-log-events --log-group-name /ecs/eafit-web-es
-```
-
-### Problemas de SSL/TLS
-1. Solicitar certificado en AWS Certificate Manager
-2. Validar dominio en Route 53
-3. Esperar validación (minutos)
-4. Crear listener HTTPS en ALB
-
----
-
-## Recursos Útiles
+## Recursos
 
 - **AWS Console**: https://console.aws.amazon.com/
 - **AWS Educate**: https://aws.amazon.com/education/awseducate/
-- **ECR Best Practices**: https://docs.aws.amazon.com/AmazonECR/latest/userguide/
-- **ECS Best Practices**: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/
-- **RDS Best Practices**: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/
+- **DuckDNS**: https://www.duckdns.org/
+- **Documentación Completa**: Ver `CONFIGURACION_Y_DESPLIEGUE.md`
 
 ---
 
-## Después del Despliegue
-
-### 1. Configurar Monitoreo
-```powershell
-# Crear alarmas en CloudWatch
-# Ver métricas de recursos
-aws cloudwatch list-metrics --region us-east-1
-```
-
-### 2. Configurar Auto-Scaling
-```powershell
-# Crear políticas de escalado automático en ECS
-aws application-autoscaling register-scalable-target \
-  --service-namespace ecs \
-  --resource-id service/eafit-cluster/eafit-service \
-  --scalable-dimension ecs:service:DesiredCount \
-  --min-capacity 1 \
-  --max-capacity 3 \
-  --region us-east-1
-```
-
-### 3. Backup y Recovery
-- RDS tiene backups automáticos (7 días de retención configurados)
-- Configurar snapshots de RDS para backups a largo plazo
-
----
-
-**Creado**: Mayo 24, 2026  
-**Versión**: 1.0  
-**Estado**: Producción
+**Última actualización**: Mayo 24, 2026  
+**Versión**: 1.0
