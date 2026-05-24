@@ -1,0 +1,224 @@
+{
+  "family": "eafit-app",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "web-es",
+      "image": "[ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/practicafinal-web-es:latest",
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "DB_HOST",
+          "value": "[RDS_ENDPOINT_HERE]"
+        },
+        {
+          "name": "DB_USER",
+          "value": "admin"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "[DB_PASSWORD_HERE]"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "usuarios"
+        },
+        {
+          "name": "LANGUAGE",
+          "value": "es"
+        },
+        {
+          "name": "FLASK_ENV",
+          "value": "production"
+        },
+        {
+          "name": "ADMIN_PASSWORD",
+          "value": "[ADMIN_PASSWORD_HERE]"
+        },
+        {
+          "name": "SMTP_SERVER",
+          "value": "smtp.gmail.com"
+        },
+        {
+          "name": "SMTP_PORT",
+          "value": "587"
+        },
+        {
+          "name": "SMTP_USER",
+          "value": "[YOUR_GMAIL_HERE]"
+        },
+        {
+          "name": "SMTP_PASSWORD",
+          "value": "[GMAIL_APP_PASSWORD_HERE]"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/eafit-web-es",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "essential": true,
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    },
+    {
+      "name": "web-en",
+      "image": "[ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/practicafinal-web-en:latest",
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "DB_HOST",
+          "value": "[RDS_ENDPOINT_HERE]"
+        },
+        {
+          "name": "DB_USER",
+          "value": "admin"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "[DB_PASSWORD_HERE]"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "usuarios"
+        },
+        {
+          "name": "LANGUAGE",
+          "value": "en"
+        },
+        {
+          "name": "FLASK_ENV",
+          "value": "production"
+        },
+        {
+          "name": "ADMIN_PASSWORD",
+          "value": "[ADMIN_PASSWORD_HERE]"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/eafit-web-en",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "essential": true,
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    },
+    {
+      "name": "stats",
+      "image": "[ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/practicafinal-stats:latest",
+      "portMappings": [
+        {
+          "containerPort": 5001,
+          "hostPort": 5001,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "DB_HOST",
+          "value": "[RDS_ENDPOINT_HERE]"
+        },
+        {
+          "name": "DB_USER",
+          "value": "admin"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "[DB_PASSWORD_HERE]"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "usuarios"
+        },
+        {
+          "name": "FLASK_ENV",
+          "value": "production"
+        },
+        {
+          "name": "ADMIN_PASSWORD",
+          "value": "[ADMIN_PASSWORD_HERE]"
+        },
+        {
+          "name": "SMTP_SERVER",
+          "value": "smtp.gmail.com"
+        },
+        {
+          "name": "SMTP_PORT",
+          "value": "587"
+        },
+        {
+          "name": "SMTP_USER",
+          "value": "[YOUR_GMAIL_HERE]"
+        },
+        {
+          "name": "SMTP_PASSWORD",
+          "value": "[GMAIL_APP_PASSWORD_HERE]"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/eafit-stats",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "essential": true,
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:5001/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::[ACCOUNT_ID]:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::[ACCOUNT_ID]:role/ecsTaskRole",
+  "tags": [
+    {
+      "key": "Project",
+      "value": "PracticaFinal"
+    },
+    {
+      "key": "Environment",
+      "value": "Production"
+    },
+    {
+      "key": "Team",
+      "value": "EAFIT"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# Base de datos
+*.db
+*.sqlite
+*.sql
+
+# IDEs
+.vscode
+.idea
+*.swp
+
+# Otros
+.DS_Store

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuarios - Universidad EAFIT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d0a4e 100%);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            border: 2px solid #a855f7;
+        }
+        
+        h1 {
+            color: #a855f7;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #d8b4fe;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a855f7;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #a855f7;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            background: #0a0a0a;
+            color: #d8b4fe;
+        }
+        
+        input[type="text"]::placeholder,
+        select {
+            color: #7c3aed;
+        }
+        
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #d8b4fe;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 100%);
+            color: white;
+            border: 2px solid #a855f7;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.5);
+            background: linear-gradient(135deg, #6a1b9a 0%, #7b1fa2 100%);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .message.success {
+            background-color: #2d5a2d;
+            color: #90ee90;
+            border: 1px solid #4a8a4a;
+            display: block;
+        }
+        
+        .message.error {
+            background-color: #5a2d2d;
+            color: #ff7070;
+            border: 1px solid #8a4a4a;
+            display: block;
+        }
+        
+        .loader {
+            display: none;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Estudiantes</h1>
+        <p class="subtitle">Universidad EAFIT</p>
+        
+        <div id="message" class="message"></div>
+        <div class="loader" id="loader"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="nombre">
+                    Nombre Completo <span class="required">*</span>
+                </label>
+                <input type="text" id="nombre" name="nombre" required placeholder="Ingrese su nombre completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="comuna">
+                    Zona de la Comuna <span class="required">*</span>
+                </label>
+                <select id="comuna" name="comuna" required>
+                    <option value="">Seleccione una comuna</option>
+                    {% for comuna in comunas %}
+                    <option value="{{ comuna }}">{{ comuna }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="carrera">
+                    Carrera de Interés <span class="required">*</span>
+                </label>
+                <select id="carrera" name="carrera" required>
+                    <option value="">Seleccione una carrera</option>
+                    {% for carrera in carreras %}
+                    <option value="{{ carrera }}">{{ carrera }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit">Registrarse</button>
+        </form>
+    </div>
+    
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const messageEl = document.getElementById('message');
+            const loaderEl = document.getElementById('loader');
+            
+            messageEl.style.display = 'none';
+            loaderEl.style.display = 'block';
+            
+            const formData = {
+                nombre: document.getElementById('nombre').value.trim(),
+                comuna: document.getElementById('comuna').value,
+                carrera: document.getElementById('carrera').value
+            };
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                loaderEl.style.display = 'none';
+                
+                messageEl.style.display = 'block';
+                if (response.ok) {
+                    messageEl.className = 'message success';
+                    messageEl.textContent = data.message;
+                    document.getElementById('registerForm').reset();
+                    
+                    setTimeout(() => {
+                        messageEl.style.display = 'none';
+                    }, 5000);
+                } else {
+                    messageEl.className = 'message error';
+                    messageEl.textContent = data.message || 'Error en el registro';
+                }
+            } catch (error) {
+                loaderEl.style.display = 'none';
+                messageEl.style.display = 'block';
+                messageEl.className = 'message error';
+                messageEl.textContent = 'Error de conexión: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
